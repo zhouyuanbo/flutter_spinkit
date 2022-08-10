@@ -9,7 +9,10 @@ class SpinKitFadingCircle extends StatefulWidget {
     this.itemBuilder,
     this.duration = const Duration(milliseconds: 1200),
     this.controller,
-  })  : assert(!(itemBuilder is IndexedWidgetBuilder && color is Color) && !(itemBuilder == null && color == null),
+    this.isStop = false,
+  })  : assert(
+            !(itemBuilder is IndexedWidgetBuilder && color is Color) &&
+                !(itemBuilder == null && color == null),
             'You should specify either a itemBuilder or a color'),
         super(key: key);
 
@@ -18,20 +21,37 @@ class SpinKitFadingCircle extends StatefulWidget {
   final IndexedWidgetBuilder? itemBuilder;
   final Duration duration;
   final AnimationController? controller;
+  final bool isStop;
 
   @override
   _SpinKitFadingCircleState createState() => _SpinKitFadingCircleState();
 }
 
-class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTickerProviderStateMixin {
-  final List<double> delays = [.0, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1];
+class _SpinKitFadingCircleState extends State<SpinKitFadingCircle>
+    with SingleTickerProviderStateMixin {
+  final List<double> delays = [
+    .0,
+    -1.1,
+    -1.0,
+    -0.9,
+    -0.8,
+    -0.7,
+    -0.6,
+    -0.5,
+    -0.4,
+    -0.3,
+    -0.2,
+    -0.1
+  ];
   late AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = (widget.controller ?? AnimationController(vsync: this, duration: widget.duration))..repeat();
+    _controller = (widget.controller ??
+        AnimationController(vsync: this, duration: widget.duration))
+      ..repeat();
   }
 
   @override
@@ -44,6 +64,12 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isStop) {
+      _controller.reset();
+    } else {
+      _controller.repeat();
+    }
+
     return Center(
       child: SizedBox.fromSize(
         size: Size.square(widget.size),
@@ -58,8 +84,11 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
                 child: Align(
                   alignment: Alignment.center,
                   child: FadeTransition(
-                    opacity: DelayTween(begin: 0.0, end: 1.0, delay: delays[i]).animate(_controller),
-                    child: SizedBox.fromSize(size: Size.square(widget.size * 0.15), child: _itemBuilder(i)),
+                    opacity: DelayTween(begin: 0.0, end: 1.0, delay: delays[i])
+                        .animate(_controller),
+                    child: SizedBox.fromSize(
+                        size: Size.square(widget.size * 0.15),
+                        child: _itemBuilder(i)),
                   ),
                 ),
               ),
@@ -72,5 +101,7 @@ class _SpinKitFadingCircleState extends State<SpinKitFadingCircle> with SingleTi
 
   Widget _itemBuilder(int index) => widget.itemBuilder != null
       ? widget.itemBuilder!(context, index)
-      : DecoratedBox(decoration: BoxDecoration(color: widget.color, shape: BoxShape.circle));
+      : DecoratedBox(
+          decoration:
+              BoxDecoration(color: widget.color, shape: BoxShape.circle));
 }
